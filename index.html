@@ -1,21 +1,47 @@
-<!-- JUST MADE THIS FOR TESTING. Esther will change it -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Zipcode Map</title>
+
+    <style>
+        #map-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+        }
+
+        #map-container svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
 </head>
 
 <body>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/zipcode_map.js"></script>
-    
-    <div id="map"></div>
+    <script src="js/redline_map.js"></script>
+
+    <!-- both of the maps will be held here-->
+    <div id="map-container">
+        <svg id="redline-map"></svg>
+        <svg id="zipcode-map"></svg>
+        
+    </div>
 
     <script>
-        // Run AFTER the DOM exists
-        drawZipcodeMap(0.5);
+        drawRedlineMap(1);
+        drawZipcodeMap(0.2);
+        
+
+        /* NOTES:
+          - need to make sure that the less opaque map is on top so that the more opaque map can be seen underneath
+                    - this might somehow involve the order of the svg elements in the html.. not sure
+          - seems like 0.2 and 1 are good opacity values for the maps, but we can adjust as needed
+            */
     </script>
+
 </body>
 </html>
