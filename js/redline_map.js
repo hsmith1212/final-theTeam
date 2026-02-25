@@ -44,5 +44,7 @@ function drawRedlineMap(opacity) {
             .attr("fill", (d) => zoneColors[d.properties.ZoneColor])
             .attr("stroke", "black")
             .attr("opacity", opacity);
+
+            
     });
 }
