@@ -25,6 +25,9 @@
     <script src="js/zipcode_map.js"></script>
     <script src="js/redline_map.js"></script>
     <script src="js/opacity_change.js"></script>
+    <!-- for percent calculations -->
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <script src="js/percentageOverlap.js"></script>
 
     <!-- both of the maps will be held here-->
     <div id="map-container">
@@ -56,6 +59,7 @@
             document.dispatchEvent(new Event("focus-zipcode"));
         }, 5000);
     </script>
+    
 
 </body>
 
