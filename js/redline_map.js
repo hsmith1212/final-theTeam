@@ -32,7 +32,7 @@ function drawRedlineMap(opacity) {
             "Red": "#FF0000",
             "Yellow": "#FFFF00",
             "Green": "#13d213",
-            "Blue": "#3e3ef3",
+            "Blue": "#77b8e3",
             "Gray": "#808080"
         };
 
