@@ -40,24 +40,28 @@
         drawRedlineMap(0.5);
         drawZipcodeMap(0.5);
 
+        
         // TESTING: simluting events to check if the opacity changes are working as expected
         // Wait a moment so the maps finish drawing
         setTimeout(() => {
             console.log("Testing: focusing ZIPCODE map");
             document.dispatchEvent(new Event("focus-zipcode"));
         }, 1000);
+        
 
         // Then switch to redline focus
         setTimeout(() => {
             console.log("Testing: focusing REDLINE map");
             document.dispatchEvent(new Event("focus-redline"));
         }, 3000);
+        /*
 
         // Then switch back to zipcode
         setTimeout(() => {
             console.log("Testing: focusing ZIPCODE map again");
             document.dispatchEvent(new Event("focus-zipcode"));
         }, 5000);
+        */
     </script>
     
 
