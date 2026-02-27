@@ -3,68 +3,202 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Zipcode Map</title>
+    <title>Map Composition</title>
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .map-section {
+            flex: 1;
+        }
+
+        .layers-section {
+            width: 250px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
         #map-container {
             position: relative;
-            width: 500px;
-            height: 500px;
+            width: 100%;
+            height: 600px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         #map-container svg {
             position: absolute;
             top: 0;
             left: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .layers-list {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        .layer-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .layer-item button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .layer-item button:hover {
+            color: #333;
+        }
+
+        .layer-name {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .layer-item input[type="checkbox"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
         }
     </style>
 </head>
 
 <body>
+    <h1>Map Composition</h1>
+
+    <div class="container">
+        <div class="map-section">
+            <h2>Map Canvas</h2>
+            <div id="map-container">
+                <svg id="redline-map"></svg>
+                <svg id="zipcode-map"></svg>
+            </div>
+        </div>
+
+        <div class="layers-section">
+            <h2>Layers</h2>
+            <div class="layers-list" id="layers-list"></div>
+        </div>
+    </div>
+
+    <!-- Your D3 scripts -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/zipcode_map.js"></script>
     <script src="js/redline_map.js"></script>
     <script src="js/opacity_change.js"></script>
-    <!-- for percent calculations -->
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
     <script src="js/percentageOverlap.js"></script>
 
-    <!-- both of the maps will be held here-->
-    <div id="map-container">
-        <svg id="redline-map"></svg>
-        <svg id="zipcode-map"></svg>
-
-    </div>
-
     <script>
-        drawRedlineMap(0.5);
-        drawZipcodeMap(0.5);
+        // Application state
+        const appState = {
+            maps: [
+                { id: 1, name: 'Redline Map', visible: true, opacity: 0.5, svgId: 'redline-map' },
+                { id: 2, name: 'Zipcode Map', visible: true, opacity: 0.5, svgId: 'zipcode-map' }
+            ]
+        };
 
-        
-        // TESTING: simluting events to check if the opacity changes are working as expected
-        // Wait a moment so the maps finish drawing
-        setTimeout(() => {
-            console.log("Testing: focusing ZIPCODE map");
-            document.dispatchEvent(new Event("focus-zipcode"));
-        }, 1000);
-        
+        // Initialize layers panel
+        function renderLayers() {
+            const layersList = document.getElementById('layers-list');
+            layersList.innerHTML = '';
 
-        // Then switch to redline focus
-        setTimeout(() => {
-            console.log("Testing: focusing REDLINE map");
-            document.dispatchEvent(new Event("focus-redline"));
-        }, 3000);
-        /*
+            appState.maps.forEach(map => {
+                const layerItem = document.createElement('div');
+                layerItem.className = 'layer-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = map.visible;
+                checkbox.dataset.mapId = map.id;
+                
+                const name = document.createElement('span');
+                name.className = 'layer-name';
+                name.textContent = map.name;
+                
+                layerItem.appendChild(checkbox);
+                layerItem.appendChild(name);
+                layersList.appendChild(layerItem);
+            });
 
-        // Then switch back to zipcode
-        setTimeout(() => {
-            console.log("Testing: focusing ZIPCODE map again");
-            document.dispatchEvent(new Event("focus-zipcode"));
-        }, 5000);
-        */
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const mapId = parseInt(checkbox.dataset.mapId);
+                    const map = appState.maps.find(m => m.id === mapId);
+                    map.visible = checkbox.checked;
+                    document.getElementById(map.svgId).style.display = map.visible ? 'block' : 'none';
+                });
+            });
+        }
+
+        // Initialize maps
+        function initializeMaps() {
+            setTimeout(() => {
+                if (window.drawRedlineMap) {
+                    drawRedlineMap(appState.maps[0].opacity);
+                }
+                if (window.drawZipcodeMap) {
+                    drawZipcodeMap(appState.maps[1].opacity);
+                }
+            }, 100);
+        }
+
+        // Start the app
+        renderLayers();
+        initializeMaps();
     </script>
-    
-
 </body>
 
 </html>
