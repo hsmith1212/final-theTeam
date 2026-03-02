@@ -4,15 +4,14 @@ function drawZipcodeMap(opacity) {
     const width = 500;
     const height = 500;
     // load zip code data
-    const URL = '../data/worcester_zipcodes.geojson';
+    const URL = 'https://raw.githubusercontent.com/hsmith1212/final-theTeam/40393d3f61b1e17cef011baaadc89e315d49a4f9/data/ma_zipcodes.geojson';
     const BREAKDOWN_CSV_URL = 'https://raw.githubusercontent.com/hsmith1212/final-theTeam/refs/heads/main/data/worcester_zip_redlining_breakdown.csv';
 
     // Load both the map data and the breakdown data
     Promise.all([
         d3.json(URL),
         d3.csv(BREAKDOWN_CSV_URL)
-    ]).then(function ([worcesterData, breakdownData]) {
-        /*
+    ]).then(function ([data, breakdownData]) {
         console.log(data); // for debugging
         console.log(breakdownData); // for debugging
         console.log("zip code properities: ", data.features[0].properties); // checking properties
@@ -23,12 +22,13 @@ function drawZipcodeMap(opacity) {
             features: data.features
                 .filter(feature => feature.properties.CITY_TOWN.includes("WORCESTER"))
         };
-        */
 
+        for (let i = 0; i < worcesterData.features.length; i++) {
+            const feature = worcesterData.features[i];
+            console.log(`Feature ${i}: POSTCODE=${feature.properties.POSTCODE}, geometry type=${feature.geometry.type}`);
+        }
+        
 
-        console.log(JSON.stringify(worcesterData, null, 2));
-        console.log(worcesterData); // for debugging
-        console.log(worcesterData.features.map(f => f.properties.COUNTY)); // also debugging
 
         const svg = d3.select("#zipcode-map")
             .attr("width", width)
