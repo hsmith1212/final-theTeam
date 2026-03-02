@@ -107,7 +107,8 @@
             color: #333;
         }
 
-        .layer-item input[type="checkbox"] {
+        .layer-item input[type="checkbox"],
+        .layer-item input[type="radio"] {
             cursor: pointer;
             width: 16px;
             height: 16px;
@@ -128,12 +129,12 @@
         </div>
 
         <div class="layers-section">
-            <h2>Layers</h2>
+            <h2>Select a map to focus</h2>
             <div class="layers-list" id="layers-list"></div>
         </div>
     </div>
 
-    <!-- Your D3 scripts -->
+    <!-- D3 scripts -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/zipcode_map.js"></script>
     <script src="js/redline_map.js"></script>
@@ -155,30 +156,33 @@
             const layersList = document.getElementById('layers-list');
             layersList.innerHTML = '';
 
+            // build a simple either/or radio group that triggers focus events
             appState.maps.forEach(map => {
                 const layerItem = document.createElement('div');
                 layerItem.className = 'layer-item';
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.checked = map.visible;
-                checkbox.dataset.mapId = map.id;
-                
+
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'map-focus';
+                radio.value = map.id;
+                radio.dataset.event = map.id === 1 ? 'focus-redline' : 'focus-zipcode';
+                // default focus to the first map
+                if (map.id === 1) radio.checked = true;
+
                 const name = document.createElement('span');
                 name.className = 'layer-name';
                 name.textContent = map.name;
-                
-                layerItem.appendChild(checkbox);
+
+                layerItem.appendChild(radio);
                 layerItem.appendChild(name);
                 layersList.appendChild(layerItem);
             });
 
-            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.addEventListener('change', () => {
-                    const mapId = parseInt(checkbox.dataset.mapId);
-                    const map = appState.maps.find(m => m.id === mapId);
-                    map.visible = checkbox.checked;
-                    document.getElementById(map.svgId).style.display = map.visible ? 'block' : 'none';
+            document.querySelectorAll('input[name="map-focus"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.checked) {
+                        document.dispatchEvent(new Event(radio.dataset.event));
+                    }
                 });
             });
         }
@@ -198,6 +202,8 @@
         // Start the app
         renderLayers();
         initializeMaps();
+        // fire initial focus event so the default radio selection is respected
+        document.dispatchEvent(new Event('focus-redline'));
     </script>
 </body>
 
