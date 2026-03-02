@@ -8,7 +8,7 @@ The event listeners are triggered by the buttons in the index.html file, which d
 */
 
 document.addEventListener("focus-zipcode", () => {
-    d3.select("#redline-map").raise(); // put more transparent map on top, so that it is easier to see the zip code map when it is focused
+    d3.select("#zipcode-map").raise(); // put zip code on top so it can be clicked
     d3.select("#zipcode-map")
         .selectAll("path")
         .attr("opacity", 1);
@@ -19,7 +19,7 @@ document.addEventListener("focus-zipcode", () => {
 });
 
 document.addEventListener("focus-redline", () => {
-    d3.select("#zipcode-map").raise(); // put more transparent map on top, so that it is easier to see the redline map when it is focused
+    d3.select("#redline-map").raise(); // put red line on top so i can be cliked
     d3.select("#zipcode-map")
         .selectAll("path")
         .attr("opacity", 0.15);

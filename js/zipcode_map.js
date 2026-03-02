@@ -5,8 +5,16 @@ function drawZipcodeMap(opacity) {
     const height = 500;
     // load zip code data
     const URL = 'https://raw.githubusercontent.com/hsmith1212/final-theTeam/40393d3f61b1e17cef011baaadc89e315d49a4f9/data/ma_zipcodes.geojson';
-    d3.json(URL).then(function (data) {
+    const BREAKDOWN_CSV_URL = 'https://raw.githubusercontent.com/hsmith1212/final-theTeam/refs/heads/main/data/worcester_zip_redlining_breakdown.csv';
+    
+    // Load both the map data and the breakdown data
+    Promise.all([
+        d3.json(URL),
+        d3.csv(BREAKDOWN_CSV_URL)
+    ]).then(function ([data, breakdownData]) {
         console.log(data); // for debugging
+        console.log(breakdownData); // for debugging
+        console.log("zip code properities: ", data.features[0].properties); // checking properties
 
         // only keep Worcester zip codes. Auto complete helped with this, but I edited what property to filter by
         const worcesterData = {
@@ -42,8 +50,30 @@ function drawZipcodeMap(opacity) {
             .enter()
             .append("path")
             .attr("d", path)
-            .attr("fill", "none")
+            .attr("fill", "transparent")
             .attr("stroke", "black")
-            .attr("opacity", opacity);
-    });
+            .attr("stroke-opacity", opacity)
+            .on("click", function (event, d) {
+                // when a zip code is clicked, dispatch a custom event with the zip code, breakdown data, and placeholders (for now until eloisa updates)
+                const zipCode = d.properties.POSTCODE;
+                
+                // find the % coloring data for this zipcode
+                const zipBreakdownData = breakdownData.find(row => String(row.zip) === String(zipCode));
+                
+                const customEvent = new CustomEvent("zipcode-clicked", {
+                    detail: {
+                        zipCode: zipCode,
+                        breakdownData: zipBreakdownData || {},
+                        // placeholders for eloisa
+                        demographicData: null,
+                        historicalNotes: null,
+                        additionalContext: null
+                    }
+                });
+                document.dispatchEvent(customEvent);
+                console.log("Dispatched zipcode-clicked event for zip code:", zipCode); // for debugging
+                console.log("Breakdown data for this zip code:", zipBreakdownData); // for debugging
+            });
+    })
+    .catch(err => console.error("Failed to load data:", err)); // if there is an error loading data
 }
