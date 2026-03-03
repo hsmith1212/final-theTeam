@@ -48,38 +48,38 @@ function drawZipcodeMap(opacity) {
 
         let path = d3.geoPath().projection(projection);
 
-        svg.selectAll("path")
-            .data(worcesterData.features)
-            .enter()
-            .append("path")
-            .attr("d", path)
-            .attr("fill", "transparent")
-            .attr("stroke", "black")
-            .attr("stroke-opacity", opacity)
-            .style("pointer-events", "fill")
-            .style("cursor", "pointer")
-            .on("click", function (event, d) {
-                const zipCode = d.properties.POSTCODE;
+                // Build O(1) lookup for CSV rows by zip
+        const breakdownByZip = new Map(
+        breakdownData.map(r => [String(r.zip).padStart(5, "0"), r])
+        );
 
-                // Look up redlining breakdown for this zip.
-                // CSV column is lowercase "zip"; pad to 5 digits to match POSTCODE.
-                const breakdown = breakdownData.find(row =>
-                    row.zip.padStart(5, '0') === String(zipCode)
-                );
+        svg.selectAll("path.zip")
+        .data(worcesterData.features, f => String(f.properties.POSTCODE).padStart(5, "0"))
+        .join("path")
+        .attr("class", "zip")
+        .attr("d", path)
+        .attr("fill", "rgba(0,0,0,0)")     // transparent but still clickable
+        .attr("stroke", "black")
+        .attr("stroke-opacity", opacity)
+        .style("pointer-events", "all")
+        .style("cursor", "pointer")
+        .on("click", function (event, d) {
+            // IMPORTANT: normalize to string ZIP
+            const zipCode = String(d.properties.POSTCODE).padStart(5, "0");
 
-                const detail = {
-                    zipCode: zipCode,
-                    breakdownData: breakdown || {},
-                    // placeholders for team-mates to fill in
-                    demographicData: null,
-                    historicalNotes: null,
-                    additionalContext: null
-                };
+            const breakdown = breakdownByZip.get(zipCode) || null;
 
-                document.dispatchEvent(new CustomEvent("zipcode-clicked", { detail }));
+            const detail = {
+            zipCode,
+            breakdownData: breakdown || {},
+            demographicData: null,
+            historicalNotes: null,
+            additionalContext: null
+            };
 
-                console.log("zipcode-clicked →", zipCode, detail);
-            });
+            document.dispatchEvent(new CustomEvent("zipcode-clicked", { detail }));
+            console.log("zipcode-clicked →", zipCode, detail);
+        });
     })
         .catch(err => console.error("Failed to load data:", err)); // if there is an error loading data
 }
