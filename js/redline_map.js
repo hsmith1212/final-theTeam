@@ -4,8 +4,8 @@ function drawRedlineMap(opacity) {
     const width = 500;
     const height = 500;
     // load zip code data
-    const URL = 'https://raw.githubusercontent.com/hsmith1212/final-theTeam/40393d3f61b1e17cef011baaadc89e315d49a4f9/data/Worcester_Redlining_Zones.geojson';
-    d3.json(URL).then(function (data) {
+    const URL = 'data/Worcester_Redlining_Zones.geojson';
+    d3.json(URL).then(async function (data) {
         console.log(data); // for debugging
         console.log("red line properties: ", data.features[0].properties); // checking properties
         const svg = d3.select("#redline-map")
@@ -14,17 +14,14 @@ function drawRedlineMap(opacity) {
 
         svg.selectAll("path").remove(); // clear the svg before drawing, so that re-draws don't overlap
 
-        // for creating map, referenced https://www.d3indepth.com/geographic/
-        const projection = d3.geoMercator()
-            .center([-71.8, 42.27])
-            .scale(130000) // needed to way up the map to fit the svg, this was found through trial and error
-            .translate([width / 2, height / 2]);
-
-        console.log(projection([-71.8, 42.2])); // for debugging, should be around the center of the map
-        console.log(projection([-71.9, 42.3]));
-        console.log(width, height); // for debugging, should be 500, 500
+        const projection = await getSharedWorcesterProjection(width, height, 35);
 
         let path = d3.geoPath().projection(projection);
+        const redlineBounds = path.bounds(data);
+        console.log("Redline render diagnostics:", {
+            featureCount: data.features.length,
+            bounds: redlineBounds
+        });
 
 
         // mapping zone colors to color fills in map

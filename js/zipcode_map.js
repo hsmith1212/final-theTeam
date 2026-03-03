@@ -4,24 +4,19 @@ function drawZipcodeMap(opacity) {
     const width = 500;
     const height = 500;
     // load zip code data
-    const URL = 'https://raw.githubusercontent.com/hsmith1212/final-theTeam/40393d3f61b1e17cef011baaadc89e315d49a4f9/data/ma_zipcodes.geojson';
-    const BREAKDOWN_CSV_URL = 'https://raw.githubusercontent.com/hsmith1212/final-theTeam/refs/heads/main/data/worcester_zip_redlining_breakdown.csv';
+    const URL = MASS_ZIP_GEOJSON_URL;
+    const BREAKDOWN_CSV_URL = 'data/worcester_zip_redlining_breakdown.csv';
 
     // Load both the map data and the breakdown data
     Promise.all([
         d3.json(URL),
         d3.csv(BREAKDOWN_CSV_URL)
-    ]).then(function ([data, breakdownData]) {
+    ]).then(async function ([data, breakdownData]) {
         console.log(data); // for debugging
         console.log(breakdownData); // for debugging
         console.log("zip code properities: ", data.features[0].properties); // checking properties
 
-        // only keep Worcester zip codes. Auto complete helped with this, but I edited what property to filter by
-        const worcesterData = {
-            type: "FeatureCollection",
-            features: data.features
-                .filter(feature => feature.properties.CITY_TOWN.includes("WORCESTER"))
-        };
+        const worcesterData = getWorcesterZipFeatureCollection(data);
 
         for (let i = 0; i < worcesterData.features.length; i++) {
             const feature = worcesterData.features[i];
@@ -36,17 +31,14 @@ function drawZipcodeMap(opacity) {
 
         svg.selectAll("path").remove(); // clear the svg before drawing, so that re-draws don't overlap
 
-        // for creating map, referenced https://www.d3indepth.com/geographic/
-        const projection = d3.geoMercator()
-            .center([-71.8, 42.27])
-            .scale(130000) // needed to way up the map to fit the svg, this was found through trial and error
-            .translate([width / 2, height / 2]);
-
-        console.log(projection([-71.8, 42.2])); // for debugging, should be around the center of the map
-        console.log(projection([-71.9, 42.3]));
-        console.log(width, height); // for debugging, should be 500, 500
+        const projection = await getSharedWorcesterProjection(width, height, 35);
 
         let path = d3.geoPath().projection(projection);
+        const zipBounds = path.bounds(worcesterData);
+        console.log("ZIP render diagnostics:", {
+            featureCount: worcesterData.features.length,
+            bounds: zipBounds
+        });
 
         svg.selectAll("path")
             .data(worcesterData.features)

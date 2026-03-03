@@ -1,12 +1,12 @@
 async function computeZipRedlineOverlap() {
-  const redURL = 'https://raw.githubusercontent.com/hsmith1212/final-theTeam/40393d3f61b1e17cef011baaadc89e315d49a4f9/data/Worcester_Redlining_Zones.geojson';
-  const zipURL = 'https://raw.githubusercontent.com/hsmith1212/final-theTeam/40393d3f61b1e17cef011baaadc89e315d49a4f9/data/ma_zipcodes.geojson';
+  const redURL = 'data/Worcester_Redlining_Zones.geojson';
+  const zipURL = 'data/ma_zipcodes.geojson';
 
   const [redData, zipData] = await Promise.all([d3.json(redURL), d3.json(zipURL)]);
 
   // Worcester ZIPs
   const worcesterZips = zipData.features.filter(f =>
-    f.properties.CITY_TOWN && f.properties.CITY_TOWN.includes("WORCESTER")
+    normalizeCityTownName(f?.properties?.CITY_TOWN) === "WORCESTER"
   );
 
   // Valid redlining polygons only
