@@ -129,8 +129,23 @@
         </div>
 
         <div class="layers-section">
-            <h2>Select a map to focus</h2>
-            <div class="layers-list" id="layers-list"></div>
+        <h2>Select a map to focus</h2>
+        <div class="layers-list" id="layers-list"></div>
+
+        <!-- Redline details (shows ONLY when redline is focused) -->
+        <div id="redline-details" style="
+            margin-top: 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 14px;
+            line-height: 1.35;
+            display: none;
+        ">
+            <div style="font-weight:700; margin-bottom:6px;">Redline Map</div>
+            <div id="redline-zone-info">Click a redlining zone to see details.</div>
+        </div>
         </div>
     </div>
 
@@ -143,68 +158,110 @@
     <script src="js/percentageOverlap.js"></script>
 
     <script>
-        // Application state
-        const appState = {
-            maps: [
-                { id: 1, name: 'Redline Map', visible: true, opacity: 0.5, svgId: 'redline-map' },
-                { id: 2, name: 'Zipcode Map', visible: true, opacity: 0.5, svgId: 'zipcode-map' }
-            ]
-        };
+  // Application state
+  const appState = {
+    maps: [
+      { id: 1, name: 'Redline Map', visible: true, opacity: 0.5, svgId: 'redline-map' },
+      { id: 2, name: 'Zipcode Map', visible: true, opacity: 0.5, svgId: 'zipcode-map' }
+    ]
+  };
 
-        // Initialize layers panel
-        function renderLayers() {
-            const layersList = document.getElementById('layers-list');
-            layersList.innerHTML = '';
+  // Track which map is currently focused
+  let focusedMap = "redline"; // default matches your initial radio check
 
-            // build a simple either/or radio group that triggers focus events
-            appState.maps.forEach(map => {
-                const layerItem = document.createElement('div');
-                layerItem.className = 'layer-item';
+  function setDetailsVisibility() {
+    const detailsBox = document.getElementById("redline-details");
+    if (!detailsBox) return;
+    detailsBox.style.display = (focusedMap === "redline") ? "block" : "none";
+  }
 
-                const radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = 'map-focus';
-                radio.value = map.id;
-                radio.dataset.event = map.id === 1 ? 'focus-redline' : 'focus-zipcode';
-                // default focus to the first map
-                if (map.id === 1) radio.checked = true;
+  // Update focus when radios change (you already dispatch these events)
+  document.addEventListener("focus-redline", () => {
+    focusedMap = "redline";
+    setDetailsVisibility();
+  });
 
-                const name = document.createElement('span');
-                name.className = 'layer-name';
-                name.textContent = map.name;
+  document.addEventListener("focus-zipcode", () => {
+    focusedMap = "zipcode";
+    setDetailsVisibility();
+  });
 
-                layerItem.appendChild(radio);
-                layerItem.appendChild(name);
-                layersList.appendChild(layerItem);
-            });
+  // Only update the redline info box if redline is focused
+  document.addEventListener("redline-clicked", (e) => {
+    if (focusedMap !== "redline") return;
 
-            document.querySelectorAll('input[name="map-focus"]').forEach(radio => {
-                radio.addEventListener('change', () => {
-                    if (radio.checked) {
-                        document.dispatchEvent(new Event(radio.dataset.event));
-                    }
-                });
-            });
+    const info = e.detail;
+    const panel = document.getElementById("redline-zone-info");
+    if (!panel) return;
+
+    panel.innerHTML = `
+      <div style="font-weight:700; margin-bottom:6px;">
+        Zone ${info.redLineNum} — ${info.zoneColor}
+      </div>
+      <div>${info.description || "No description available."}</div>
+    `;
+  });
+
+  // Initialize layers panel
+  function renderLayers() {
+    const layersList = document.getElementById('layers-list');
+    layersList.innerHTML = '';
+
+    // build a simple either/or radio group that triggers focus events
+    appState.maps.forEach(map => {
+      const layerItem = document.createElement('div');
+      layerItem.className = 'layer-item';
+
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'map-focus';
+      radio.value = map.id;
+      radio.dataset.event = map.id === 1 ? 'focus-redline' : 'focus-zipcode';
+
+      // default focus to the first map
+      if (map.id === 1) radio.checked = true;
+
+      const name = document.createElement('span');
+      name.className = 'layer-name';
+      name.textContent = map.name;
+
+      layerItem.appendChild(radio);
+      layerItem.appendChild(name);
+      layersList.appendChild(layerItem);
+    });
+
+    document.querySelectorAll('input[name="map-focus"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (radio.checked) {
+          document.dispatchEvent(new Event(radio.dataset.event));
         }
+      });
+    });
+  }
 
-        // Initialize maps
-        function initializeMaps() {
-            setTimeout(() => {
-                if (window.drawRedlineMap) {
-                    drawRedlineMap(appState.maps[0].opacity);
-                }
-                if (window.drawZipcodeMap) {
-                    drawZipcodeMap(appState.maps[1].opacity);
-                }
-            }, 100);
-        }
+  // Initialize maps
+  function initializeMaps() {
+    setTimeout(() => {
+      if (window.drawRedlineMap) {
+        drawRedlineMap(appState.maps[0].opacity);
+      }
+      if (window.drawZipcodeMap) {
+        drawZipcodeMap(appState.maps[1].opacity);
+      }
+    }, 100);
+  }
 
-        // Start the app
-        renderLayers();
-        initializeMaps();
-        // fire initial focus event so the default radio selection is respected
-        document.dispatchEvent(new Event('focus-redline'));
-    </script>
+  // Start the app
+  renderLayers();
+  initializeMaps();
+
+  // Show the correct details state on first load
+  setDetailsVisibility();
+
+  // fire initial focus event so the default radio selection is respected
+  document.dispatchEvent(new Event('focus-redline'));
+</script>
+
 </body>
 
 </html>
