@@ -1,6 +1,29 @@
 Final Project - Interactive Data Visualization  
 ===
 
+Local Development Server
+---
+
+Use the included server instead of `python -m http.server` for more reliable local behavior with GeoJSON/CSV and browser caching.
+
+Run from the project root:
+
+```bash
+python dev_server.py --port 8000 --open
+```
+
+Optional flags:
+
+- `--host 0.0.0.0` to expose on your LAN
+- `--dir .` to choose a different serving directory
+
+Why this server is better for this project:
+
+- Sends explicit MIME type for `.geojson` (`application/geo+json`)
+- Sends explicit MIME type for `.csv` and `.js`
+- Disables cache headers to avoid stale map/data while iterating
+- Adds permissive local CORS headers
+
 * Edit 04-Feb-2025 -> adding link to a Notion doc of ideas (totally optional, mainly ideas collected from recent convos w/ people) -> https://scented-flock-323.notion.site/Project-Ideas-18fcf1e51ce380f79f92d4faf3ae7b4a?pvs=4
 
 The key learning experience of this course is the final project. 
