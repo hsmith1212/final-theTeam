@@ -58,6 +58,19 @@ function drawRedlineMap(opacity) {
                 .attr("stroke", "black")
                 .attr("opacity", opacity)
                 .on("click", function (event, d) {
+
+                    //this code will make the selected zone "light up"
+                    // prevent the click from bubbling up to the document
+                    event.stopPropagation();
+
+                    // remove selection from all zones
+                    d3.selectAll("#redline-map path")
+                        .classed("selected", false);
+
+                    // add selection to the clicked one
+                    d3.select(this)
+                        .classed("selected", true);
+
                     // when a zip code is clicked, dispatch a custom event with the zip code, breakdown data, and placeholders (for now until eloisa updates)
                     const redLineNum = d.properties.ZoneNumber;
                     const customEvent = new CustomEvent("redline-clicked", {
@@ -81,3 +94,8 @@ function drawRedlineMap(opacity) {
         });
     });
 }
+
+document.addEventListener("click", function () {
+    d3.selectAll("#redline-map path")
+        .classed("selected", false);
+});

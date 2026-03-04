@@ -63,9 +63,22 @@ function drawZipcodeMap(opacity) {
                 .attr("fill", "transparent")
                 .attr("stroke", "black")
                 .attr("stroke-opacity", opacity)
+                .attr("stroke-width", 1.5)
                 .style("pointer-events", "fill")
                 .style("cursor", "pointer")
                 .on("click", function (event, d) {
+                    //this code will make the selected zone "light up"
+                    // prevent the click from bubbling up to the document
+                    event.stopPropagation();
+
+                    // remove selection from all zones
+                    d3.selectAll("#zipcode-map path")
+                        .classed("selected", false);
+
+                    // add selection to the clicked one
+                    d3.select(this)
+                        .classed("selected", true);
+
                     const zipCode = d.properties.POSTCODE;
 
                     // Look up redlining breakdown for this zip.
@@ -91,3 +104,8 @@ function drawZipcodeMap(opacity) {
             .catch(err => console.error("Failed to load data:", err)); // if there is an error loading data
     });
 }
+
+document.addEventListener("click", function () {
+    d3.selectAll("#zipcode-map path")
+        .classed("selected", false);
+});

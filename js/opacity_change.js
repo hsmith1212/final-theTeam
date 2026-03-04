@@ -22,9 +22,9 @@ document.addEventListener("focus-redline", () => {
     d3.select("#redline-map").raise(); // put red line on top so i can be cliked
     d3.select("#zipcode-map")
         .selectAll("path")
-        .attr("opacity", 0.15);
+        .attr("opacity", 0.5);
 
     d3.select("#redline-map")
         .selectAll("path")
-        .attr("opacity", 1);
+        .attr("opacity", .9);
 });
