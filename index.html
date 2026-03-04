@@ -3,18 +3,18 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>PROJECT TITLE</title>
+    <title>Map Composition</title>
 
     <style>
-        *{
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: ghostwhite;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
             padding: 20px;
         }
 
@@ -25,12 +25,12 @@
             margin: 0 auto;
         }
 
-        .map-section{
+        .map-section {
             flex: 1;
         }
 
-        .layers-section{
-            width: 250px;
+        .layers-section {
+            width: 350px;
         }
 
         h1 {
@@ -61,9 +61,9 @@
             transition: opacity 0.3s ease;
         }
 
-        .layers-list{
+        .layers-list {
             background-color: white;
-            border: 1 px solid #ddd;
+            border: 1px solid #ddd;
             border-radius: 4px;
             padding: 15px;
         }
@@ -107,6 +107,23 @@
             color: #333;
         }
 
+        .layer-item input[type="checkbox"],
+        .layer-item input[type="radio"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        .layer-item button:hover {
+            color: #333;
+        }
+
+        .layer-name {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+        }
+
         .layer-item input[type="checkbox"]{
             cursor: pointer;
             width: 16px;
@@ -118,101 +135,196 @@
 
 
 <body>
-    <h1> Project Title</h1>
-    <div class = "container">
-        <div class = "map-section">
-            <h2>Sandbox</h2>
-            <div id = "map-container">
+    <h1>Map Composition</h1>
+
+    <div class="container">
+        <div class="map-section">
+            <h2>Map Canvas</h2>
+            <div id="map-container">
                 <svg id="redline-map"></svg>
-                <svg id ="zipcode-map"></svg>
+                <svg id="zipcode-map"></svg>
             </div>
         </div>
 
-        <div class = "layers-section">
-            <h2>Layers</h2>
-            <div class = "layers-list" id = "layers-list"></div>
+        <div class="layers-section">
+            <h2>Select a map to focus</h2>
+            <div class="layers-list" id="layers-list"></div>
+
+            <!-- Redline details (shows ONLY when redline is focused) -->
+            <div id="redline-details" style="
+            margin-top: 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 14px;
+            line-height: 1.35;
+            display: none;
+        ">
+                <div style="font-weight:700; margin-bottom:6px;">Redline Map</div>
+                <div id="redline-zone-info">Click a redlining zone to see details.</div>
+            </div>
+
+            <!--Zipcode details -->
+            <div id = "zipcode-details" style="
+            margin-top: 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 14px;
+            line-height: 1.35;
+            display: none;
+        ">
+            <div style = "font-weight: 700; margin-bottom:6px">Zipcode Map</div>
+            <div id="zipcode-zone-info">Click a zipcode zone to see details.</div>
+            </div>
         </div>
     </div>
 
-    <!-- add maps  -->
+    <!-- D3 scripts -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="js/map_projection.js"></script>
     <script src="js/zipcode_map.js"></script>
     <script src="js/redline_map.js"></script>
     <script src="js/opacity_change.js"></script>
-    <!-- for percent calculations -->
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
     <script src="js/percentageOverlap.js"></script>
 
-    <!-- both of the maps will be held here-->
-    <div id="map-container">
-        <svg id="redline-map"></svg>
-        <svg id="zipcode-map"></svg>
-
-    </div>
-
     <script>
-        drawRedlineMap(0.5);
-        drawZipcodeMap(0.5);
-
-        // TESTING: simluting events to check if the opacity changes are working as expected
-        // Wait a moment so the maps finish drawing
-        setTimeout(() => {
-            console.log("Testing: focusing ZIPCODE map");
-            document.dispatchEvent(new Event("focus-zipcode"));
-        }, 1000);
-
-        // Then switch to redline focus
-        setTimeout(() => {
-            console.log("Testing: focusing REDLINE map");
-            document.dispatchEvent(new Event("focus-redline"));
-        }, 3000);
-
-        // Then switch back to zipcode
-        setTimeout(() => {
-            console.log("Testing: focusing ZIPCODE map again");
-            document.dispatchEvent(new Event("focus-zipcode"));
-        }, 5000);
-
+        // Application state
         const appState = {
-            maps:[
-                {id: 1, name: 'Redline Map', visible: true, opacity: 0.5, svgId:'redline-map'},
-                {id: 2, name: 'Zipcode Map', visible: true, opacity: 0.5, svgId:'zipcode-map' }
+            maps: [
+                { id: 1, name: 'Redline Map', visible: true, opacity: 0.5, svgId: 'redline-map' },
+                { id: 2, name: 'Zipcode Map', visible: true, opacity: 0.5, svgId: 'zipcode-map' }
             ]
         };
 
-        function renderLayers(){
+        // Track which map is currently focused
+        let focusedMap = "redline"; // default matches your initial radio check
+
+        function setDetailsVisibility() {
+            const redlineDetailsBox = document.getElementById("redline-details");
+            const zipcodeDetailsBox = document.getElementById("zipcode-details");
+
+            if (redlineDetailsBox) {
+                redlineDetailsBox.style.display = (focusedMap === "redline") ? "block" : "none";
+            }
+            if(zipcodeDetailsBox) {
+                zipcodeDetailsBox.style.display = (focusedMap === "zipcode") ? "block" : "none";
+            }
+        }
+
+        // Update focus when radios change (you already dispatch these events)
+        document.addEventListener("focus-redline", () => {
+            focusedMap = "redline";
+            setDetailsVisibility();
+        });
+
+        document.addEventListener("focus-zipcode", () => {
+            focusedMap = "zipcode";
+            setDetailsVisibility();
+        });
+
+        // Only update the redline info box if redline is focused
+        document.addEventListener("redline-clicked", (e) => {
+            if (focusedMap !== "redline") return;
+
+            const info = e.detail;
+            console.log("info", info);
+            const panel = document.getElementById("redline-zone-info");
+            if (!panel) return;
+
+            panel.innerHTML = `
+        <div style="font-weight:700; margin-bottom:6px;">
+            Zone ${info.redLineNum} - ${info.zoneColor}: ${info.zoneCategory}
+        </div>
+
+        <div style="font-weight:600;">
+            Zone description as written in 1936:
+        </div>
+
+        <div style="margin-bottom:10px;">
+            ${info.description || "No description available."}
+        </div>
+
+        `;
+        });
+        // additional zipcode side panel logic
+        document.addEventListener("zipcode-clicked", (e) => {
+            if (focusedMap !== "zipcode") return;
+
+            const info = e.detail;
+            console.log("zipcode info", info);
+            const panel = document.getElementById("zipcode-zone-info");
+            if (!panel) return;
+
+            const breakdown = info.breakdownData || {};
+            const breakdownInfo = breakdown && Object.keys(breakdown).length > 0
+                ? Object.entries(breakdown)
+                .filter(([key]) => key !== "zip")
+                    .map(([key, value]) => {
+                        const numValue = parseFloat(value);
+                        const rounded = isNaN(numValue) ? value: numValue.toFixed(2);
+                        return `<div><strong>${key}:</strong> ${rounded}</div>`;
+                    })
+                    .join("")
+                : "No redlining breakdown data available.";
+
+            panel.innerHTML = `
+        <div style="font-weight:700; margin-bottom:6px;">
+            ${info.zipCode}
+        </div>
+        
+        <div style="font-weight:600; margin-bottom:6px;">
+            Redlining Breakdown:
+        </div>
+
+        <div style="margin-bottom:10px; font-size:13px;">
+            ${breakdownInfo}
+        </div>
+        `;
+            
+        });
+
+        // Initialize layers panel
+        function renderLayers() {
             const layersList = document.getElementById('layers-list');
             layersList.innerHTML = '';
 
+            // build a simple either/or radio group that triggers focus events
             appState.maps.forEach(map => {
                 const layerItem = document.createElement('div');
                 layerItem.className = 'layer-item';
 
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.checked = map.visible;
-                checkbox.dataset.mapId = map.id;
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'map-focus';
+                radio.value = map.id;
+                radio.dataset.event = map.id === 1 ? 'focus-redline' : 'focus-zipcode';
+
+                // default focus to the first map
+                if (map.id === 1) radio.checked = true;
 
                 const name = document.createElement('span');
                 name.className = 'layer-name';
                 name.textContent = map.name;
 
-                layerItem.appendChild(checkbox);
+                layerItem.appendChild(radio);
                 layerItem.appendChild(name);
                 layersList.appendChild(layerItem);
             });
 
-            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => 
-            {
-                checkbox.addEventListener('change', () => {
-                    const mapId = parseInt(checkbox.dataset.mapId);
-                    const map = appState.maps.find(m => m.id === mapId);
-                    map.visible = checkbox.checked;
-                    document.getElementById(map.svgId).style.display = map.visible ? 'block' : 'none';
+            document.querySelectorAll('input[name="map-focus"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.checked) {
+                        document.dispatchEvent(new Event(radio.dataset.event));
+                    }
                 });
             });
         }
 
+        // Initialize maps
         function initializeMaps() {
             setTimeout(() => {
                 if (window.drawRedlineMap) {
@@ -224,10 +336,40 @@
             }, 100);
         }
 
+        // adding zoom and pan to maps
+        function enableZoom() {
+            const redlineLayer = d3.select("#redline-map .zoom-layer");
+            const zipcodeLayer = d3.select("#zipcode-map .zoom-layer");
+
+            const zoom = d3.zoom()
+                .scaleExtent([1, 8])
+                .on("zoom", (event) => {
+                    redlineLayer.attr("transform", event.transform);
+                    zipcodeLayer.attr("transform", event.transform);
+                });
+
+            d3.select("#map-container")
+                .call(zoom);
+        }
+
+        // Start the app
         renderLayers();
-        initializeMaps();
+        //initializeMaps();
+        Promise.all([
+            drawRedlineMap(appState.maps[0].opacity),
+            drawZipcodeMap(appState.maps[1].opacity)
+        ]).then(() => {
+            enableZoom(); // now both zoom-layer groups exist
+        });
+
+        // Show the correct details state on first load
+        setDetailsVisibility();
+
+        setTimeout(enableZoom, 300); // enable zoom after a short delay to ensure maps are rendered
+
+        // fire initial focus event so the default radio selection is respected
+        document.dispatchEvent(new Event('focus-redline'));
     </script>
-    
 
 </body>
 
