@@ -280,7 +280,13 @@
 
         // Start the app
         renderLayers();
-        initializeMaps();
+        //initializeMaps();
+        Promise.all([
+            drawRedlineMap(appState.maps[0].opacity),
+            drawZipcodeMap(appState.maps[1].opacity)
+        ]).then(() => {
+            enableZoom(); // now both zoom-layer groups exist
+        });
 
         // Show the correct details state on first load
         setDetailsVisibility();
