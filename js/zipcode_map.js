@@ -1,8 +1,14 @@
 // opacity will change how visible the zip code map is, with 0 being invisible and 1 being fully visible
 function drawZipcodeMap(opacity) {
     // constants for the map
+    const container = document.getElementById("map-container");
+
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    /*
     const width = 500;
     const height = 500;
+    */
     // load zip code data
     const URL = MASS_ZIP_GEOJSON_URL;
     const BREAKDOWN_CSV_URL = 'data/worcester_zip_redlining_breakdown.csv';
@@ -22,14 +28,20 @@ function drawZipcodeMap(opacity) {
             const feature = worcesterData.features[i];
             console.log(`Feature ${i}: POSTCODE=${feature.properties.POSTCODE}, geometry type=${feature.geometry.type}`);
         }
-        
+
 
 
         const svg = d3.select("#zipcode-map")
             .attr("width", width)
-            .attr("height", height);
+            .attr("height", height)
+            .attr("viewBox", `0 0 ${width} ${height}`);
+
+
+
 
         svg.selectAll("path").remove(); // clear the svg before drawing, so that re-draws don't overlap
+
+        const g = svg.append("g").attr("class", "zoom-layer");
 
         const projection = await getSharedWorcesterProjection(width, height, 35);
 
@@ -40,7 +52,9 @@ function drawZipcodeMap(opacity) {
             bounds: zipBounds
         });
 
-        svg.selectAll("path")
+
+
+        g.selectAll("path")
             .data(worcesterData.features)
             .enter()
             .append("path")

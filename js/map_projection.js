@@ -87,21 +87,31 @@ function getSharedWorcesterProjection(width, height, padding = 20) {
 
     return sharedWorcesterFeatureCollectionPromise.then(function (worcesterData) {
         const bounds = getLonLatBounds(worcesterData);
-        const usableWidth = Math.max(1, width - (padding * 2));
-        const usableHeight = Math.max(1, height - (padding * 2));
+
+        const usableWidth = Math.max(1, width - padding * 2);
+        const usableHeight = Math.max(1, height - padding * 2);
         const lonSpan = Math.max(bounds.lonSpan, 1e-9);
         const latSpan = Math.max(bounds.latSpan, 1e-9);
 
-        const scale = Math.min(usableWidth / lonSpan, usableHeight / latSpan);
+        // Compute both scales
+        const xscale = usableWidth / lonSpan;
+        const yscale = usableHeight / latSpan;
+
+        // Use the smaller scale to maintain aspect ratio
+        const scale = Math.min(xscale, yscale);
+
+        // Projected dimensions
         const projectedWidth = lonSpan * scale;
         const projectedHeight = latSpan * scale;
+
+        // Center offsets
         const offsetX = (width - projectedWidth) / 2;
         const offsetY = (height - projectedHeight) / 2;
 
         const projection = d3.geoTransform({
             point: function (lon, lat) {
-                const x = offsetX + ((lon - bounds.minLon) * scale);
-                const y = offsetY + ((bounds.maxLat - lat) * scale);
+                const x = offsetX + (lon - bounds.minLon) * scale;
+                const y = offsetY + (bounds.maxLat - lat) * scale;
                 this.stream.point(x, y);
             }
         });
