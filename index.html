@@ -330,6 +330,10 @@
             </div>
         `;
 
+            if (window.renderZipDemographicsChart) {
+                window.renderZipDemographicsChart(info.zipCode);
+            }
+
         });
 
         // Initialize layers panel
