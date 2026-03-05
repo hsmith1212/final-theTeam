@@ -305,19 +305,28 @@
                 : "No redlining breakdown data available.";
 
             panel.innerHTML = `
-        <div style="font-weight:700; margin-bottom:6px;">
-            ${info.zipCode}
-        </div>
-        
-        <div style="font-weight:600; margin-bottom:6px;">
-            Redlining Breakdown:
-        </div>
+            <div style="font-weight:700; margin-bottom:6px;">
+                ${info.zipCode}
+            </div>
+            
+            <div style="font-weight:600; margin-bottom:6px;">
+                Redlining Breakdown:
+            </div>
 
-        <div style="margin-bottom:10px; font-size:13px;">
-            ${breakdownInfo}
-        </div>
+            <div style="margin-bottom:10px; font-size:13px;">
+                ${breakdownInfo}
+            </div>
+
+            <div style="margin-bottom:6px;">
+                <span style="font-weight:600;">Median Housing Price:</span>
+                <span>${info.medianHousePrice ? `$${info.medianHousePrice}` : "N/A"}</span>
+            </div>
+
+            <div style="margin-bottom:6px;">
+                <span style="font-weight:600;">Median Income:</span>
+                <span>${info.medianIncome ? `$${info.medianIncome}` : "N/A"}</span>
+            </div>
         `;
-
         });
 
         // Initialize layers panel

@@ -13,12 +13,14 @@ function drawZipcodeMap(opacity) {
         // load zip code data
         const URL = MASS_ZIP_GEOJSON_URL;
         const BREAKDOWN_CSV_URL = 'data/worcester_zip_redlining_breakdown.csv';
+        const CURRENT_DAY_CSV = 'data/zipCodeInfo.csv';
 
         // Load both the map data and the breakdown data
         Promise.all([
             d3.json(URL),
-            d3.csv(BREAKDOWN_CSV_URL)
-        ]).then(async function ([data, breakdownData]) {
+            d3.csv(BREAKDOWN_CSV_URL),
+            d3.csv(CURRENT_DAY_CSV)
+        ]).then(async function ([data, breakdownData, currentDayData]) {
             console.log(data); // for debugging
             console.log(breakdownData); // for debugging
             console.log("zip code properities: ", data.features[0].properties); // checking properties
@@ -87,13 +89,18 @@ function drawZipcodeMap(opacity) {
                         row.zip.padStart(5, '0') === String(zipCode)
                     );
 
+                    const currentDayInfo = currentDayData.find(row =>
+                        row.zip_code.padStart(5, '0') === String(zipCode)
+                    );
+
+                    const medianHousePrice = currentDayInfo ? currentDayInfo.median_housing_price : null;
+                    const medianIncome = currentDayInfo ? currentDayInfo.median_household_income : null;
+
                     const detail = {
                         zipCode: zipCode,
                         breakdownData: breakdown || {},
-                        // placeholders for team-mates to fill in
-                        demographicData: null,
-                        historicalNotes: null,
-                        additionalContext: null
+                        medianHousePrice: medianHousePrice,
+                        medianIncome: medianIncome
                     };
 
                     document.dispatchEvent(new CustomEvent("zipcode-clicked", { detail }));
