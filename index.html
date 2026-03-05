@@ -211,6 +211,7 @@
         ">
                 <div style="font-weight: 700; margin-bottom:6px">Zipcode Map</div>
                 <div id="zipcode-zone-info">Click a zipcode zone to see details.</div>
+                <div id="zipcode-demographics-chart" style="margin-top:10px;"></div>
             </div>
         </div>
     </div>
@@ -223,6 +224,7 @@
     <script src="js/opacity_change.js"></script>
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
     <script src="js/percentageOverlap.js"></script>
+    <script src="js/zip_demographics_chart.js"></script>
 
     <script>
         // Application state
@@ -327,6 +329,14 @@
                 <span>${info.medianIncome ? `$${info.medianIncome}` : "N/A"}</span>
             </div>
         `;
+<<<<<<< Updated upstream
+=======
+
+            if (window.renderZipDemographicsChart) {
+                window.renderZipDemographicsChart(info.zipCode);
+            }
+
+>>>>>>> Stashed changes
         });
 
         // Initialize layers panel
