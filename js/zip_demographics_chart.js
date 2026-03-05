@@ -136,8 +136,8 @@
     // Title
     svg.append("text")
       .attr("x", margin.left)
-      .attr("y", 14)
-      .attr("font-size", 13)
+      .attr("y", 9)
+      .attr("font-size", 11)
       .attr("font-weight", 700)
       .text(`Race/Ethnicity (% of total) — ${zip5}`);
 
