@@ -194,7 +194,7 @@
             line-height: 1.35;
             display: none;
         ">
-                <div style="font-weight:700; margin-bottom:6px;">Redline Map</div>
+                <div style="font-weight:700; margin-bottom:6px;text-align:center;">Redline Map</div>
                 <div id="redline-zone-info">Click a redlining zone to see details.</div>
             </div>
 
@@ -209,7 +209,9 @@
             line-height: 1.35;
             display: none;
         ">
-                <div style="font-weight: 700; margin-bottom:6px">Zipcode Map</div>
+                <div style="font-weight: 700; margin-bottom:6px; text-align:center;">Zipcode Map</div>
+                <div id="zip"></div>
+                <div id="zipcode-redline-breakdown" style="margin-top:10px;"></div>
                 <div id="zipcode-zone-info">Click a zipcode zone to see details.</div>
                 <div id="zipcode-demographics-chart" style="margin-top:10px;"></div>
             </div>
@@ -225,6 +227,7 @@
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
     <script src="js/percentageOverlap.js"></script>
     <script src="js/zip_demographics_chart.js"></script>
+    <script src="js/breakdown_graph.js"></script>
 
     <script>
         // Application state
@@ -294,30 +297,12 @@
             const panel = document.getElementById("zipcode-zone-info");
             if (!panel) return;
 
-            const breakdown = info.breakdownData || {};
-            const breakdownInfo = breakdown && Object.keys(breakdown).length > 0
-                ? Object.entries(breakdown)
-                    .filter(([key]) => key !== "zip")
-                    .map(([key, value]) => {
-                        const numValue = parseFloat(value);
-                        const rounded = isNaN(numValue) ? value : numValue.toFixed(2);
-                        return `<div><strong>${key}:</strong> ${rounded}</div>`;
-                    })
-                    .join("")
-                : "No redlining breakdown data available.";
+            const zipPanel = document.getElementById("zip");
+            if (zipPanel) {
+                zipPanel.textContent = `Zipcode: ${info.zipCode}`;
+            }
 
             panel.innerHTML = `
-            <div style="font-weight:700; margin-bottom:6px;">
-                ${info.zipCode}
-            </div>
-            
-            <div style="font-weight:600; margin-bottom:6px;">
-                Redlining Breakdown:
-            </div>
-
-            <div style="margin-bottom:10px; font-size:13px;">
-                ${breakdownInfo}
-            </div>
 
             <div style="margin-bottom:6px;">
                 <span style="font-weight:600;">Median Housing Price:</span>
@@ -329,11 +314,26 @@
                 <span>${info.medianIncome ? `$${info.medianIncome}` : "N/A"}</span>
             </div>
         `;
-
             if (window.renderZipDemographicsChart) {
                 window.renderZipDemographicsChart(info.zipCode);
             }
 
+            const panel3 = document.getElementById("zipcode-redline-breakdown");
+
+            if (panel3) {
+
+                // Create container for chart
+                panel3.innerHTML = `
+                    <div style="font-weight:600; margin-bottom:6px;">
+                        Redlining Breakdown:
+                    </div>
+
+                    <div id="zip-redlining-chart-container"></div>
+                `;
+
+                // render chart
+                renderZipRedliningChart(info.zipCode);
+            }
         });
 
         // Initialize layers panel
