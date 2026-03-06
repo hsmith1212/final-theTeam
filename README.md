@@ -43,6 +43,7 @@ Precomputed redlining overlap percentages
 
 ### Python Files
 correlation_test.py: Used to analyze correlations between redlining zone percentages and median housing prices.
+
 dev_server.py: Local development server used to run the project and properly load CSV and GeoJSON files.
 
 Libraries
