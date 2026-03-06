@@ -20,11 +20,17 @@ index.html: Main webpage containing the map visualization and interface.
 
 ### JavaScript (Project Code)
 redline_map.js: Draws the historic redlining zones on the map and allows users to click zones to view details.
+
 zipcode_map.js: Draws Worcester zip code boundaries and allows users to click zip codes to see modern data.
+
 map_projection.js: Creates a shared geographic projection so both maps align correctly.
+
 opacity_change.js: Controls which map layer is currently in focus by adjusting opacity.
+
 percentageOverlap.js: Calculates how much of each Worcester zip code overlaps with each historic redlining zone.
+
 breakdown_graph.js: Creates the bar chart showing the percentage of redlining zones inside a selected zip code.
+
 zip_demographics_chart.js: Creates a demographic chart showing race and ethnicity data for the selected zip code.
 
 ### Data Files
