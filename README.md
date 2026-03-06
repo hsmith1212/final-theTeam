@@ -50,6 +50,7 @@ Libraries
 ---
 The project uses the following external libraries:
 D3.js – for maps and data visualization
+
 Turf.js – for spatial calculations such as polygon overlap
 
 Interface Features
