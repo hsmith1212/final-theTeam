@@ -1,4 +1,13 @@
-Final Project - Interactive Data Visualization  
+The Team Final Project- Exploring the Impact of Historic Redlining in Worcester
+===
+
+Screen cast: https://www.youtube.com/watch?v=ogmw8-sb3cQ
+
+Project website: https://hsmith1212.github.io/final-theTeam/
+
+Process book: https://drive.google.com/file/d/1u-6lays6OiPB_vpxqdn8oxjUh9Bh-r59/view
+
+HIS PART OF THE READE ME
 ===
 
 Local Development Server
