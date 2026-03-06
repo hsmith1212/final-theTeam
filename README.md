@@ -56,11 +56,15 @@ Turf.js – for spatial calculations such as polygon overlap
 Interface Features
 ---
 Map Focus Toggle: Users can switch between the Redlining Map and Zipcode Map using the radio buttons on the side panel.
+
 Interactive Map: Clicking a redlining zone displays the zone description and classification from historic records.
+
 Zipcode Information Panel
+
 Clicking a zip code displays:
     - median housing price
     - median household income
     - redlining zone breakdown
     - demographic chart
+    
 Zoom and Pan: Users can zoom and pan the map to explore Worcester in more detail.
